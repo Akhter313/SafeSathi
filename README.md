@@ -47,3 +47,18 @@ python -m venv venv
 venv\\Scripts\\activate     # (Windows)
 pip install -r requirements.txt
 python run.py
+
+📚 Learn More
+Cybercrime Portal
+CERT-IN Advisories
+Twitter - @Cyberdost
+
+👨‍💻 Developed by
+Kamal Akhter
+B.Tech Cybersecurity @ Central University of Jammu
+
+⭐ Support the Project
+Give this repo a ⭐ if you think this chatbot can save someone from getting scammed.
+
+📄 License
+MIT License — Free for use with credit 🙏
