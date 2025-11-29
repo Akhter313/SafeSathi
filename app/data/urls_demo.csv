@@ -1,0 +1,9 @@
+url,label
+http://google.com,0
+https://www.amazon.in,0
+https://www.centraluniversityofjammu.ac.in,0
+http://example.com/login?user=abc,0
+http://bit.ly/abc123,1
+http://192.168.0.1/login,1
+http://verify-paytm-helpdesk.com,1
+https://secure-update-bank-login.com,1

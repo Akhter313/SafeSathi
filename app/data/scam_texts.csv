@@ -1,0 +1,13 @@
+text,label
+"Congratulations! You won a prize, click the link to claim.","scam"
+"Your bank account will be blocked, verify immediately.","scam"
+"Get a job paying ₹50,000 per month. Apply now!","scam"
+"Investment offer: multiply your money in 1 week.","scam"
+"You have a parcel pending. Pay ₹50 to release.","scam"
+"Urgent: Update KYC or service will be stopped.","scam"
+
+"Hi, are you free tomorrow?","not_scam"
+"Please join class at 2 PM.","not_scam"
+"Meeting is scheduled for Monday.","not_scam"
+"Your Amazon order has shipped.","not_scam"
+"Can you send the document?","not_scam"

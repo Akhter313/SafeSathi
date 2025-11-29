@@ -1,109 +1,142 @@
 # app/utils.py
+
 from flask import session
+from app.texts import get_text
 from app.ai.cohere_gpt import generate_response
+from app.ai.local_models import predict_url
+from app.ai.local_models.text_model import predict_text
 from app.logs import log_interaction
 
+
+def append_menu_select(response, lang):
+    """Append menu select prompt to response"""
+    menu_prompt = get_text(lang, "menu_select_prompt")
+    return response + menu_prompt
+
 def handle_user_input(user_input):
-    user_input_lower = user_input.lower()
+    """
+    Core chatbot logic.
+    Handles user input based on session state and returns a response.
+    """
+    user_input_lower = user_input.lower().strip()
+    
+    # Initialize language if not set
+    if "lang" not in session:
+        session["lang"] = "en" # Default to English
+        session["state"] = "language_selection_init"
+        return get_text("en", "welcome_card")
 
-    # Entry point
-    if user_input_lower in ["hi", "menu"]:
+    lang = session["lang"]
+    state = session.get("state", "main_menu")
+
+    # Global commands
+    if user_input_lower in ["menu", "hi", "hello", "start"]:
+        session["state"] = "language_selection_init"
+        return get_text("en", "welcome_card")
+    
+    if user_input_lower == "lang":
+        session["state"] = "language_selection_init"
+        return get_text("en", "welcome_card")
+
+    # State: Language Selection Init (Waiting for user to click Select)
+    if state == "language_selection_init":
+        pass 
+
+    # State: Main Menu
+    if state == "main_menu":
+        if user_input_lower == "1":
+            session["state"] = "awaiting_link"
+            return get_text(lang, "awaiting_link")  # No menu select here
+        
+        elif user_input_lower == "2":
+            session["state"] = "awaiting_report"
+            return get_text(lang, "awaiting_report")  # No menu select here
+        
+        elif user_input_lower in ["3", "tips", "tip"]:
+            return append_menu_select(get_text(lang, "tip"), lang)  # Add menu select after tip
+        
+        elif user_input_lower == "4":
+            session["state"] = "reporting_scam"
+            return get_text(lang, "report_init")  # No menu select here - just asking what happened
+        
+        elif user_input_lower == "5":
+            return append_menu_select(get_text(lang, "alerts"), lang)  # Add menu select after alerts
+        
+        elif user_input_lower == "6":
+            return append_menu_select(get_text(lang, "blog"), lang)  # Add menu select after blog
+        
+        elif user_input_lower == "7":
+            return append_menu_select(get_text(lang, "checklist"), lang)  # Add menu select after checklist
+        
+        elif user_input_lower == "8":
+            return append_menu_select(get_text(lang, "reporting_sites"), lang)  # Add menu select after sites
+        
+        elif user_input_lower == "9":
+            session.clear()
+            return get_text(lang, "exit")
+        
+        else:
+            if len(user_input.split()) > 2:
+                 ai_reply = generate_response(user_input)
+                 log_interaction(user_input, ai_reply)
+                 return append_menu_select(ai_reply + get_text(lang, "return_menu"), lang)
+            
+            return append_menu_select(get_text(lang, "unknown"), lang)
+
+    # State: Awaiting Link
+    elif state == "awaiting_link":
         session["state"] = "main_menu"
-        return (
-            "✅ Main Menu:\n"
-            "1. Check Suspicious Link\n"
-            "2. Daily Cyber Tip\n"
-            "3. Report a Scam\n"
-            "4. Helpline & Support\n"
-            "5. Latest Scam Alerts\n"
-            "6. Awareness Blog\n"
-            "7. Ask SafeSathi (AI)\n"
-            "8. Safety Checklist\n"
-            "9. Scam Reporting Sites\n"
-            "0. Exit"
-        )
+        result = predict_url(user_input)
+        label_key = result["label"]
+        label_text = get_text(lang, label_key)
+        
+        reply = get_text(lang, "scan_result", url=user_input, label=label_text, prob=result["prob"])
+        
+        if result.get("suggestion"):
+            reply += "\n\n" + get_text(lang, "did_you_mean", suggestion=result['suggestion']) + "\n"
+            if "https://" in result['suggestion'] and "http://" in user_input:
+                 reply += get_text(lang, "http_insecure")
+            else:
+                 reply += get_text(lang, "typo_format")
 
-    # Suspicious Link
-    elif user_input_lower == "1" and session.get("state") == "main_menu":
-        session["state"] = "awaiting_link"
-        return "🔗 Please paste the suspicious link you'd like me to check."
+        if result["label"] != "safe":
+             if user_input.startswith("http://") and result["prob"] == 0.75:
+                 reply += "\n\n" + get_text(lang, "http_risk")
+             else:
+                 reply += "\n\n" + get_text(lang, "risk_warning")
+        
+        return append_menu_select(reply + get_text(lang, "return_menu"), lang)  # Add menu select after result
 
-    elif session.get("state") == "awaiting_link" and user_input_lower.startswith("http"):
+
+    # State: Awaiting Report (Scam Text Check)
+    elif state == "awaiting_report":
         session["state"] = "main_menu"
-        return f"⚠️ Scanning complete! This link may be unsafe: {user_input}\n\nType 'menu' to see options again."
+        result = predict_text(user_input)
+        label_key = result["label"]
+        label_text = get_text(lang, label_key)
+        
+        reply = get_text(lang, "scam_result", label=label_text, prob=result["prob"])
+        
+        if result["label"] == "scam":
+            reply += "\n\n" + get_text(lang, "scam_detected_footer")
+        else:
+            reply += "\n\n" + get_text(lang, "safe_footer")
+        
+        return append_menu_select(reply + get_text(lang, "return_menu"), lang)  # Add menu select after result
 
-    # Cyber Tip
-    elif user_input_lower in ["2", "tips", "cyber tip", "tip"]:
-        return "💡 Cyber Tip: Never trust links sent by strangers or unknown numbers. Type 'menu' to return."
-
-    # Report Scam
-    elif user_input_lower == "3":
-        session["state"] = "awaiting_report"
-        return "📩 Please paste the scam message or type your complaint:"
-
-    elif session.get("state") == "awaiting_report":
+    # State: Reporting Scam (Interactive)
+    elif state == "reporting_scam":
         session["state"] = "main_menu"
-        return (
-            "✅ Thank you. Your report is logged.\n"
-            "You can also visit https://cybercrime.gov.in or call 1930.\n\nType 'menu' to continue."
-        )
+        
+        from app.ai.scam_guidance import detect_scam_type, generate_scam_guidance
+        
+        scam_type = detect_scam_type(user_input)
+        result = predict_text(user_input)
+        label = result["label"]
+        
+        guidance = generate_scam_guidance(user_input, label, scam_type, lang)
+        final_reply = guidance + "\n\n" + get_text(lang, "helpline")
+        
+        return append_menu_select(final_reply, lang)  # Add menu select AFTER giving guidance
 
-    # Helpline
-    elif user_input_lower == "4":
-        return "📞 Cybercrime Helpline: Call 1930\nPortal: https://www.cybercrime.gov.in\nType 'menu' to return."
-
-    # Scam Alerts
-    elif user_input_lower == "5":
-        return (
-            "🚨 Trending Scam Alerts:\n"
-            "- QR Code frauds\n"
-            "- Fake job offers\n"
-            "- WhatsApp impersonation\n"
-            "- Investment scams\n\nType 'menu' to return."
-        )
-
-    # Awareness Blog
-    elif user_input_lower == "6":
-        return "📚 Visit: https://safesathi.blog for helpful blogs and guides. Type 'menu' to return."
-
-    # GPT Chat Mode
-    elif user_input_lower.startswith("chat:") or user_input_lower == "7":
-        session["state"] = "main_menu"
-        query = user_input[5:].strip() if user_input_lower.startswith("chat:") else "Tell me how to stay safe online."
-        ai_reply = generate_response(query)
-        log_interaction(query, ai_reply)
-        return ai_reply + "\n\nType 'menu' to return."
-
-    # Safety Checklist
-    elif user_input_lower == "8":
-        return (
-            "✅ Online Safety Checklist:\n"
-            "✔️ Use strong, unique passwords\n"
-            "✔️ Enable 2FA on accounts\n"
-            "✔️ Avoid public WiFi for sensitive tasks\n"
-            "✔️ Verify links before clicking\n"
-            "✔️ Don't overshare on social media\n\nType 'menu' to return."
-        )
-
-    # Trusted Links for Reporting
-    elif user_input_lower == "9":
-        return (
-            "🌐 Trusted Cybercrime Portals:\n"
-            "- Cybercrime Portal: https://www.cybercrime.gov.in\n"
-            "- CERT-IN: https://www.cert-in.org.in\n"
-            "- Twitter CyberDost: https://twitter.com/cyberdost\n\nType 'menu' to return."
-        )
-
-    # Exit
-    elif user_input_lower == "0":
-        session["state"] = "main_menu"
-        return "👋 Thank you for using SafeSathi. Stay alert and stay safe!"
-
-    # Unknown
-    else:
-        log_interaction(user_input, "❓ Unrecognized input.")
-        return (
-            "🤖 I'm still learning! Try:\n"
-            "- 'menu' to see options\n"
-            "- or 'chat: your question' to ask SafeSathi\n\nExample: chat: How to avoid phishing?"
-        )
+    return append_menu_select(get_text(lang, "unknown"), lang)

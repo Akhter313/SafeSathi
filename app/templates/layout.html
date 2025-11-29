@@ -1,6 +1,7 @@
 <!-- app/templates/layout.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: #0d1418;  /* WhatsApp dark background */
+      background: #0d1418;
       margin: 0;
       padding: 0;
       display: flex;
@@ -17,60 +18,65 @@
       align-items: center;
       height: 100vh;
     }
+
     .chat-container {
-      background-color: #1e2428;  /* WhatsApp chat box bg */
+      background-color: #1e2428;
       width: 100%;
       max-width: 500px;
       height: 90vh;
       display: flex;
       flex-direction: column;
       border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
       overflow: hidden;
       border: 1px solid #333;
     }
+
     .chat-header {
-      background-color: #075e54;  /* WhatsApp header */
+      background-color: #075e54;
       color: white;
       padding: 1rem;
       font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1rem;
+      font-size: 1.1rem;
     }
+
     .chat-box {
       flex: 1;
       padding: 1rem;
       overflow-y: auto;
-      background-color: #0d1418;  /* WhatsApp chat bg */
+      background-color: #0d1418;
       scroll-behavior: smooth;
       color: #e0e0e0;
     }
+
     .chat-line {
       margin: 0.5rem 0;
       max-width: 75%;
     }
+
     .user {
       align-self: flex-end;
-      background: #056162;  /* WhatsApp green bubble */
+      background: #056162;
       padding: 0.7rem;
       border-radius: 10px 0 10px 10px;
       color: #fff;
     }
+
     .bot {
       align-self: flex-start;
-      background: #262d31;  /* WhatsApp bot bubble */
+      background: #262d31;
       padding: 0.7rem;
       border-radius: 0 10px 10px 10px;
       color: #e0e0e0;
     }
+
     .chat-form {
       display: flex;
       padding: 0.8rem;
       background: #1e2428;
       border-top: 1px solid #2e363c;
     }
+
     .chat-form input[type="text"] {
       flex: 1;
       padding: 0.6rem 1rem;
@@ -80,8 +86,9 @@
       background: #2e363c;
       color: #fff;
     }
+
     .chat-form button {
-      background: #25d366;  /* WhatsApp send */
+      background: #25d366;
       color: white;
       border: none;
       padding: 0.6rem 1.2rem;
@@ -89,44 +96,234 @@
       border-radius: 20px;
       cursor: pointer;
     }
-    .footer {
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      background-color: #1e2428;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 300px;
+      max-height: 70vh;
+      overflow-y: auto;
       text-align: center;
-      font-size: 0.75rem;
+      color: white;
+      border: 1px solid #333;
+    }
+
+    .lang-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      background-color: #056162;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .lang-btn:hover {
+      background-color: #075e54;
+    }
+
+    .close-btn {
+      background-color: transparent;
       color: #aaa;
-      padding: 0.4rem;
-      background: #1e2428;
-      border-top: 1px solid #333;
+      border: 1px solid #aaa;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .select-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #25d366;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
   <div class="chat-container">
     <div class="chat-header">
-      🛡️ SafeSathi Bot
-      <span style="font-size: 0.7rem; font-weight: normal;">by Kamal Akhter</span>
+      SafeSathi 🛡️
     </div>
     <div class="chat-box" id="chat-box">
       {% for sender, message in chat_log %}
-        <div class="chat-line {{ 'user' if sender == 'You' else 'bot' }}">
-          {{ message }}
-        </div>
+      <div class="chat-line {{ 'user' if sender == 'You' else 'bot' }}">
+        {{ message | safe }}
+      </div>
       {% endfor %}
     </div>
-    <form method="POST" class="chat-form" onsubmit="setTimeout(scrollToBottom, 10);">
-      <input type="text" name="user_input" placeholder="Type your message..." autocomplete="off" required>
+
+    <!-- Modal for Language/Menu Selection -->
+    <div id="lang-modal" class="modal">
+      <div class="modal-content">
+        <h3 id="modal-title">Select Language / भाषा चुनें</h3>
+        <div id="lang-options"></div>
+        <button class="close-btn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+
+    <form id="chat-form" class="chat-form" onsubmit="sendMessage(event)">
+      <input type="text" id="user-input" name="user_input" placeholder="Type your message..." autocomplete="off"
+        required autofocus>
       <button type="submit">Send</button>
     </form>
-    <div class="footer">
-      📲 Features: Link Scan | Scam Alerts | Daily Tips | AI Assistant | Multi-language (soon)
-    </div>
   </div>
 
   <script>
+    const chatBox = document.getElementById("chat-box");
+    const modal = document.getElementById("lang-modal");
+
     function scrollToBottom() {
-      const chatBox = document.getElementById("chat-box");
       chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    function checkForSelectButton() {
+      const messages = document.querySelectorAll('.bot');
+      if (messages.length > 0) {
+        const lastMsg = messages[messages.length - 1];
+
+        // Check for language select button
+        if (lastMsg.innerText.includes("शुरू करने के लिए भाषा चुनें") && !lastMsg.querySelector('.lang-select-btn')) {
+          const btn = document.createElement('button');
+          btn.className = 'select-btn lang-select-btn';
+          btn.innerText = 'Select';
+          btn.onclick = openLanguageModal;
+          lastMsg.appendChild(document.createElement('br'));
+          lastMsg.appendChild(btn);
+        }
+
+        // Check for menu select button
+        if ((lastMsg.innerText.includes("कृपया चुनें कि आपके लिए क्या सबसे उपयुक्त है") ||
+          lastMsg.innerText.includes("براہ کرم منتخب کریں کہ آپ کے لیے کیا سب سے موزوں ہے")) &&
+          !lastMsg.querySelector('.menu-select-btn')) {
+          const btn = document.createElement('button');
+          btn.className = 'select-btn menu-select-btn';
+          btn.innerText = 'Select';
+          btn.onclick = openMenuModal;
+          lastMsg.appendChild(document.createElement('br'));
+          lastMsg.appendChild(btn);
+        }
+      }
+    }
+
+    function openLanguageModal() {
+      document.getElementById('modal-title').innerText = 'Select Language / भाषा चुनें';
+      fetch('/select-language')
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById('lang-options');
+          container.innerHTML = '';
+          data.forEach(lang => {
+            const btn = document.createElement('button');
+            btn.className = 'lang-btn';
+            btn.innerText = lang.label;
+            btn.onclick = () => setLanguage(lang.code);
+            container.appendChild(btn);
+          });
+          modal.style.display = 'flex';
+        });
+    }
+
+    function openMenuModal() {
+      document.getElementById('modal-title').innerText = 'Select Option / विकल्प चुनें';
+      fetch('/get-menu-options')
+        .then(response => response.json())
+        .then(data => {
+          const container = document.getElementById('lang-options');
+          container.innerHTML = '';
+          data.forEach(option => {
+            const btn = document.createElement('button');
+            btn.className = 'lang-btn';
+            btn.innerText = option.label;
+            btn.onclick = () => selectMenuOption(option.value);
+            container.appendChild(btn);
+          });
+          modal.style.display = 'flex';
+        });
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+    }
+
+    function setLanguage(langCode) {
+      fetch(`/set-language/${langCode}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          closeModal();
+          appendMessage('SafeSathi', data.response);
+        });
+    }
+
+    function selectMenuOption(optionValue) {
+      closeModal();
+      const input = document.getElementById('user-input');
+      input.value = optionValue;
+      const event = new Event('submit', { bubbles: true, cancelable: true });
+      document.getElementById('chat-form').dispatchEvent(event);
+    }
+
+    function appendMessage(sender, text) {
+      const div = document.createElement('div');
+      div.className = `chat-line ${sender === 'You' ? 'user' : 'bot'}`;
+      div.innerHTML = text.replace(/\n/g, '<br>');
+      chatBox.appendChild(div);
+      scrollToBottom();
+      if (sender === 'SafeSathi') {
+        checkForSelectButton();
+      }
+    }
+
+    function sendMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage('You', text);
+      input.value = '';
+
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      })
+        .then(response => response.json())
+        .then(data => {
+          appendMessage('SafeSathi', data.response);
+          input.focus();
+        });
+    }
+
     scrollToBottom();
+    checkForSelectButton();
   </script>
 </body>
+
 </html>
