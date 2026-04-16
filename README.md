@@ -2,25 +2,25 @@
 
 **AI-driven WhatsApp-based Interface for Social Engineering Awareness & Scam Detection**
 
-SafeSathi is a B.Tech project designed to help users (especially in rural/semi-urban India) detect online scams, check suspicious links, and receive cyber safety tips via a simple WhatsApp-style interface.
+SafeSathi is designed to help users (especially in rural/semi-urban India) detect online scams, check suspicious links, and receive cyber safety tips via a simple WhatsApp-style interface.
 
-## 🚀 Features
+##  Features
 
-- **🔗 Suspicious Link Checker**: Analyze URLs for phishing risks using a local ML model.
-- **📩 Scam Message Detector**: Detect scam texts (OTP fraud, fake jobs, etc.) using NLP.
-- **🗣️ Multi-Language Support**: Available in English, Hindi, Urdu, Maithili, and Bhojpuri.
-- **💡 Daily Cyber Tips**: Get safety advice in your preferred language.
-- **🤖 AI Assistant**: Ask questions about cyber safety (powered by Cohere, optional).
-- **📞 Helpline & Reporting**: Quick access to 1930 and cybercrime.gov.in.
+- ** Suspicious Link Checker**: Analyze URLs for phishing risks using a local ML model.
+- ** Scam Message Detector**: Detect scam texts (OTP fraud, fake jobs, etc.) using NLP.
+- ** Multi-Language Support**: Available in English, Hindi, Urdu, Maithili, and Bhojpuri.
+- ** Daily Cyber Tips**: Get safety advice in your preferred language.
+- ** AI Assistant**: Ask questions about cyber safety (powered by Cohere, optional).
+- ** Helpline & Reporting**: Quick access to 1930 and cybercrime.gov.in.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Backend**: Python, Flask
 - **ML/AI**: Scikit-learn, Pandas, TfidfVectorizer, Logistic Regression
 - **NLP**: Cohere (Optional for generative AI)
 - **Frontend**: HTML/CSS (Web Chat UI), WhatsApp (Future Integration)
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 SafeSathi/
@@ -42,7 +42,7 @@ SafeSathi/
 └── README.md               # Documentation
 ```
 
-## ⚙️ Setup & Installation
+##  Setup & Installation
 
 1.  **Clone the repository**:
     ```bash
@@ -84,7 +84,7 @@ SafeSathi/
     ```
     Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
-## 🧠 Architecture
+##  Architecture
 
 ```mermaid
 graph TD
@@ -104,7 +104,7 @@ graph TD
     Response -->|Reply| User
 ```
 
-## 📱 WhatsApp Integration
+##  WhatsApp Integration
 
 The project includes a webhook endpoint at `/webhook/whatsapp` designed to receive POST requests from WhatsApp Business API providers (like Gupshup or Twilio).
 
@@ -116,7 +116,7 @@ The project includes a webhook endpoint at `/webhook/whatsapp` designed to recei
 }
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repo
 2. Create a feature branch
@@ -125,4 +125,4 @@ The project includes a webhook endpoint at `/webhook/whatsapp` designed to recei
 5. Create a Pull Request
 
 ---
-*Developed for B.Tech Minor/Major Project - Central University of Jammu*
+
