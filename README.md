@@ -6,12 +6,12 @@ SafeSathi is designed to help users (especially in rural/semi-urban India) detec
 
 ##  Features
 
-- ** Suspicious Link Checker**: Analyze URLs for phishing risks using a local ML model.
-- ** Scam Message Detector**: Detect scam texts (OTP fraud, fake jobs, etc.) using NLP.
-- ** Multi-Language Support**: Available in English, Hindi, Urdu, Maithili, and Bhojpuri.
-- ** Daily Cyber Tips**: Get safety advice in your preferred language.
-- ** AI Assistant**: Ask questions about cyber safety (powered by Cohere, optional).
-- ** Helpline & Reporting**: Quick access to 1930 and cybercrime.gov.in.
+- **Suspicious Link Checker**: Analyze URLs for phishing risks using a local ML model.
+- **Scam Message Detector**: Detect scam texts (OTP fraud, fake jobs, etc.) using NLP.
+- **Multi-Language Support**: Available in English, Hindi, Urdu, Maithili, and Bhojpuri.
+- **Daily Cyber Tips**: Get safety advice in your preferred language.
+- **AI Assistant**: Ask questions about cyber safety (powered by Cohere, optional).
+- **Helpline & Reporting**: Quick access to 1930 and cybercrime.gov.in.
 
 ##  Tech Stack
 
