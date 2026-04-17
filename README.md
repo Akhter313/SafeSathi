@@ -87,21 +87,21 @@ SafeSathi/
 ##  Architecture
 
 ```mermaid
-graph TD
-    User[User (WhatsApp/Web)] -->|Message| Flask[Flask Backend]
-    Flask -->|Input| Handler[handle_user_input]
-    
-    Handler -->|Check Link| URLModel[URL Classifier (ML)]
-    Handler -->|Check Text| TextModel[Scam Text Classifier (ML)]
-    Handler -->|Ask Question| AI[Cohere API / Local Fallback]
-    Handler -->|Get Info| Static[Static Content (Tips, Helpline)]
-    
-    URLModel -->|Result| Response
-    TextModel -->|Result| Response
-    AI -->|Reply| Response
-    Static -->|Text| Response
-    
-    Response -->|Reply| User
+flowchart TD
+    U["User (WhatsApp / Web)"] -->|Message| F["Flask Backend"]
+    F -->|Input| H["handle_user_input"]
+
+    H -->|Check Link| URL["URL Classifier (ML)"]
+    H -->|Check Text| TXT["Scam Text Classifier (ML)"]
+    H -->|Ask Question| AI["Cohere API / Local Fallback"]
+    H -->|Get Info| S["Static Content (Tips, Helpline)"]
+
+    URL -->|Result| R["Response"]
+    TXT -->|Result| R
+    AI -->|Reply| R
+    S -->|Text| R
+
+    R -->|Reply| U
 ```
 
 ##  WhatsApp Integration
